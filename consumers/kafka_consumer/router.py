@@ -1,22 +1,35 @@
-from handlers.create_handler import handle_create
-from handlers.update_handler import handle_update
-from handlers.delete_handler import handle_delete
+try:
+    from .handlers import handle_create, handle_update, handle_delete
+    from .services.elasticsearch_service import elasticsearch_service
+    from .logger import logger
+except ImportError:
+    from handlers import handle_create, handle_update, handle_delete
+    from services.elasticsearch_service import elasticsearch_service
+    from logger import logger
 
 
 def route_event(event):
     op = event.get("op")
 
     if op == "c":
-        handle_create(event)
+        product = handle_create(event)
+        if product:
+            elasticsearch_service.index_product(product)
 
     elif op == "u":
-        handle_update(event)
+        product = handle_update(event)
+        if product:
+            elasticsearch_service.update_product(product)
 
     elif op == "d":
-        handle_delete(event)
+        product = handle_delete(event)
+        if product:
+            elasticsearch_service.delete_product(product.get("id"))
 
     elif op == "r":
-        handle_create(event)   # Snapshot event
+        product = handle_create(event)  # Snapshot event
+        if product:
+            elasticsearch_service.index_product(product)
 
     else:
-        print(f"Unknown operation: {op}")
+        logger.warning("Unknown operation: %s", op)
