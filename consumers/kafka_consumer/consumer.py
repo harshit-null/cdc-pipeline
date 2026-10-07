@@ -1,24 +1,14 @@
 import json
 from kafka.errors import KafkaError
 from kafka import KafkaConsumer
-from router import route_event
-
-try:
-    from .config import (
-        BOOTSTRAP_SERVERS,
-        GROUP_ID,
-        TOPICS,
-        AUTO_OFFSET_RESET,
-    )
-    from .logger import logger
-except ImportError:
-    from config import (
-        BOOTSTRAP_SERVERS,
-        GROUP_ID,
-        TOPICS,
-        AUTO_OFFSET_RESET,
-    )
-    from logger import logger
+from .router import route_event
+from .config import (
+    BOOTSTRAP_SERVERS,
+    GROUP_ID,
+    TOPICS,
+    AUTO_OFFSET_RESET,
+)
+from .logger import logger
 
 
 def log_banner(title):

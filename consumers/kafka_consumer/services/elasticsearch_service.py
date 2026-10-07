@@ -3,13 +3,9 @@ import os
 from elasticsearch import Elasticsearch
 from elasticsearch import NotFoundError
 from elasticsearch import ApiError
+from ..logger import logger
 
 DEV_MODE = os.environ.get("DEV_MODE", "true").lower() == "true"
-
-try:
-    from ..logger import logger
-except ImportError:
-    from logger import logger
 
 
 class ElasticsearchService:

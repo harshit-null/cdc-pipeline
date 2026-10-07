@@ -186,6 +186,74 @@ services:
     networks:
       - cdc-network
 
+  django:
+    build:
+      context: ../..
+      dockerfile: docker/local/Dockerfile.django
+    container_name: cdc-django
+    restart: unless-stopped
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+    environment:
+      DEBUG: "True"
+      SECRET_KEY: django-secret-key-change-me-in-production
+      ALLOWED_HOSTS: localhost,127.0.0.1,django
+      
+      DB_NAME: cdc_db
+      DB_USER: root
+      DB_PASSWORD: ""
+      DB_HOST: mysql
+      DB_PORT: "3306"
+
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_INDEX: products
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ../..:/app
+
+    command: python manage.py runserver 0.0.0.0:8000
+
+    networks:
+      - cdc-network
+
+  kafka-consumer:
+    build:
+      context: ../..
+      dockerfile: docker/local/Dockerfile.consumer
+    container_name: cdc-consumer
+    restart: unless-stopped
+
+    depends_on:
+      kafka:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_GROUP_ID: cdc-consumer-group-v2
+
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      ELASTICSEARCH_INDEX: products
+
+      DEV_MODE: "true"
+
+    volumes:
+      - ../..:/app
+
+    command: python -m consumers.kafka_consumer.main
+
+    networks:
+      - cdc-network
+
 volumes:
   mysql_data:
   elasticsearch_data:

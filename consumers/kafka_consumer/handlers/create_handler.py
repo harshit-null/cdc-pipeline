@@ -1,4 +1,4 @@
-from logger import logger
+from ..logger import logger
 
 
 def handle_create(event):
